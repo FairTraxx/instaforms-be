@@ -72,9 +72,15 @@ The API will be available at `http://localhost:8000/`
 
 ## API Endpoints
 
+> 📚 **For detailed API documentation with request/response examples, see [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)**
+
 ### Authentication
-- `POST /api-auth/login/` - Login
-- `POST /api-auth/logout/` - Logout
+- `POST /api/auth/register/` - Register new user
+- `POST /api/auth/login/` - User login
+- `POST /api/auth/logout/` - User logout
+- `GET /api/auth/profile/` - Get user profile
+- `PATCH /api/auth/profile/` - Update user profile
+- `POST /api/auth/change-password/` - Change password
 
 ### Forms (Authenticated)
 - `GET /api/forms/` - List user's forms
@@ -112,18 +118,54 @@ The API will be available at `http://localhost:8000/`
 
 ## Example Usage
 
+### Registering a New User
+
+```python
+import requests
+
+# Register new user with email and password only
+response = requests.post('http://localhost:8000/api/auth/register/', {
+    'email': 'john@example.com',
+    'password': 'SecurePassword123!',
+    'password2': 'SecurePassword123!'
+})
+
+# Extract token from response
+token = response.json()['token']
+user = response.json()['user']
+print(f"Registration successful! Token: {token}")
+print(f"Username: {user['username']} (auto-generated from email)")
+
+# Optional: Add first name and last name later
+profile_response = requests.patch(
+    'http://localhost:8000/api/auth/profile/',
+    json={'first_name': 'John', 'last_name': 'Doe'},
+    headers={'Authorization': f'Token {token}'}
+)
+```
+
+### Logging In
+
+```python
+import requests
+
+# Login with email and password
+response = requests.post('http://localhost:8000/api/auth/login/', {
+    'email': 'john@example.com',
+    'password': 'SecurePassword123!'
+})
+
+token = response.json()['token']
+user_data = response.json()['user']
+print(f"Welcome back, {user_data['first_name']}!")
+```
+
 ### Creating a Form
 
 ```python
 import requests
 
-# Login and get token
-response = requests.post('http://localhost:8000/api-auth/login/', {
-    'username': 'your_username',
-    'password': 'your_password'
-})
-
-# Create form
+# Create form with authentication
 form_data = {
     'title': 'Contact Form',
     'description': 'Get in touch with us',
@@ -133,13 +175,17 @@ form_data = {
 response = requests.post(
     'http://localhost:8000/api/forms/',
     json=form_data,
-    headers={'Authorization': 'Token your_token_here'}
+    headers={'Authorization': f'Token {token}'}
 )
+
+form = response.json()
+form_id = form['id']
 ```
 
 ### Adding Fields to Form
 
 ```python
+# Add a text field
 field_data = {
     'label': 'Your Name',
     'field_type': 'text',
@@ -151,7 +197,22 @@ field_data = {
 response = requests.post(
     f'http://localhost:8000/api/forms/{form_id}/add_field/',
     json=field_data,
-    headers={'Authorization': 'Token your_token_here'}
+    headers={'Authorization': f'Token {token}'}
+)
+
+# Add an email field
+email_field = {
+    'label': 'Email Address',
+    'field_type': 'email',
+    'required': True,
+    'placeholder': 'your.email@example.com',
+    'order': 2
+}
+
+response = requests.post(
+    f'http://localhost:8000/api/forms/{form_id}/add_field/',
+    json=email_field,
+    headers={'Authorization': f'Token {token}'}
 )
 ```
 
