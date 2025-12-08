@@ -1,10 +1,20 @@
+# Core Django
 Django==4.2.7
 djangorestframework==3.14.0
 django-cors-headers==4.3.1
 python-decouple==3.8
-psycopg2-binary==2.9.7
-pillow==10.0.1
-celery==5.3.4
-redis==5.0.1
+
+# Production server
 gunicorn==21.2.0
 whitenoise==6.6.0
+
+# Database - SQLite for serverless (no PostgreSQL on Vercel)
+# Note: For production, use external database like Supabase, Railway, or Neon
+
+# Optional: Uncomment if using external PostgreSQL
+# psycopg2-binary==2.9.7
+
+# Removed for Vercel deployment (serverless incompatible):
+# pillow==10.0.1  # Requires system dependencies
+# celery==5.3.4   # Not suitable for serverless
+# redis==5.0.1    # Not suitable for serverless
